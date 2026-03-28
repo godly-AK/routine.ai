@@ -152,6 +152,7 @@ public class MainActivity extends AppCompatActivity {
                     existingTasksText.append("\n\nIMPORTANT: The following tasks already exist in the database. ");
                     existingTasksText.append("You MUST include them in the new schedule with EVERY field exactly as shown — ");
                     existingTasksText.append("do not rename, reschedule, or change any value:\n\n");
+                    existingTasksText.append("only DELETE by not putting in JSON unless specifically mentioned in the prompt.");
 
                     for (Task t : activeTasks) {
                         existingTasksText.append("{\n")
