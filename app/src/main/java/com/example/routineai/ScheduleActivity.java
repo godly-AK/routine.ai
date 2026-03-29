@@ -10,7 +10,9 @@ import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
@@ -20,7 +22,6 @@ public class ScheduleActivity extends AppCompatActivity {
     private TaskAdapter adapter;
     private TextView emptyStateView;
 
-    // Shared executor — not recreated on every call
     private final ExecutorService executor = Executors.newSingleThreadExecutor();
 
     @Override
@@ -28,18 +29,17 @@ public class ScheduleActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_schedule);
 
-        // Enable back button in the top action bar
         if (getSupportActionBar() != null) {
             getSupportActionBar().setDisplayHomeAsUpEnabled(true);
             getSupportActionBar().setTitle("My Schedule");
         }
 
-        recyclerView = findViewById(R.id.recyclerViewSchedule);
-        emptyStateView = findViewById(R.id.emptyStateText); // Add this TextView in your XML
+        recyclerView   = findViewById(R.id.recyclerViewSchedule);
+        emptyStateView = findViewById(R.id.emptyStateText);
 
         recyclerView.setLayoutManager(new LinearLayoutManager(this));
 
-        // Set empty adapter first so RecyclerView isn't naked while data loads
+        // Empty adapter while data loads
         adapter = new TaskAdapter(new ArrayList<>());
         recyclerView.setAdapter(adapter);
     }
@@ -47,19 +47,32 @@ public class ScheduleActivity extends AppCompatActivity {
     @Override
     protected void onResume() {
         super.onResume();
-        // Reload every time user comes back to this screen
-        // so newly added tasks are always visible
         loadTasks();
     }
 
     private void loadTasks() {
         executor.execute(() -> {
-            List<Task> allTasks = AppDatabase.getDatabase(this).taskDao().getAllTasks();
+            AppDatabase db = AppDatabase.getDatabase(this);
+
+            List<Task> allTasks       = db.taskDao().getAllTasks();
+            List<ExecutionLog> todayLogs = db.taskDao().getLogsForToday();
+
+            // Split today's logs into two sets by status
+            Set<Integer> completedToday = new HashSet<>();
+            Set<Integer> missedToday    = new HashSet<>();
+
+            for (ExecutionLog log : todayLogs) {
+                if (log.task_id == null) continue;
+                if ("Completed".equals(log.status)) completedToday.add(log.task_id);
+                else if ("Missed".equals(log.status)) missedToday.add(log.task_id);
+            }
+
+            final Set<Integer> finalCompleted = completedToday;
+            final Set<Integer> finalMissed    = missedToday;
 
             runOnUiThread(() -> {
-                adapter.updateList(allTasks);
+                adapter.updateList(allTasks, finalCompleted, finalMissed);
 
-                // Show empty state message if no tasks exist
                 if (emptyStateView != null) {
                     emptyStateView.setVisibility(allTasks.isEmpty() ? View.VISIBLE : View.GONE);
                 }
@@ -67,7 +80,6 @@ public class ScheduleActivity extends AppCompatActivity {
         });
     }
 
-    // Handles the back arrow in the action bar
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
         if (item.getItemId() == android.R.id.home) {
@@ -80,7 +92,6 @@ public class ScheduleActivity extends AppCompatActivity {
     @Override
     protected void onDestroy() {
         super.onDestroy();
-        // Clean up the executor when the activity is destroyed
         executor.shutdown();
     }
 }

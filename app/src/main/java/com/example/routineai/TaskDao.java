@@ -36,39 +36,20 @@ public interface TaskDao {
     @Delete
     void deleteTask(Task task);
 
-    // --- BULK DELETE ---
-    @Query("DELETE FROM Task_Category_Mapping")
-    void deleteAllMappings();         // Must be called BEFORE deleteAllTasks
-
-    @Query("DELETE FROM Tasks")
-    void deleteAllTasks();
-
-    @Query("DELETE FROM Daily_Routines")
-    void deleteAllRoutines();
-
-    @Query("DELETE FROM Tasks WHERE routine_id = :routineId")
-    void deleteTasksByRoutine(int routineId);
-
     // --- QUERIES ---
     @NonNull
     @Query("SELECT * FROM Tasks ORDER BY scheduled_time ASC")
     List<Task> getAllTasks();
 
-    @Query("SELECT * FROM Tasks WHERE status = 'Pending' ORDER BY scheduled_time ASC")
-    List<Task> getPendingTasks();
+
 
     // Returns Long (boxed) so null is returned when category doesn't exist
     @Query("SELECT category_id FROM Categories WHERE category_name = :name")
     Long getCategoryIdByName(String name);
     // 1. Changes the task status to Completed
-    @androidx.room.Query("UPDATE Tasks SET status = 'Completed' WHERE id = :taskId")
-    void markTaskCompleted(int taskId);
+
 
     // 2. Turns off the alarm flag so we know it was handled
-    @androidx.room.Query("UPDATE alarms SET is_active = 0 WHERE task_id = :taskId")
-    void deactivateAlarm(int taskId);
-    @androidx.room.Insert
-    void insertExecutionLog(ExecutionLog log);
     @Insert
     void insertRecurrence(TaskRecurrence recurrence);
     // 🎯 COMPLEX QUERY: 100% Normalized dynamic aggregation
@@ -94,4 +75,8 @@ public interface TaskDao {
 
     @Query("DELETE FROM Task_Recurrence WHERE task_id = :taskId")
     void deleteRecurrenceByTask(int taskId);
+
+    @Query("SELECT * FROM Execution_Logs " +
+            "WHERE date(executed_at) = date('now', 'localtime')")
+    List<ExecutionLog> getLogsForToday();
 }
