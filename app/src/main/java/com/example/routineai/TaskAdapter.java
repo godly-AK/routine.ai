@@ -1,76 +1,117 @@
 package com.example.routineai;
 
+import android.graphics.Color;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.TextView;
 import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
+import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 public class TaskAdapter extends RecyclerView.Adapter<TaskAdapter.TaskViewHolder> {
 
     private List<Task> taskList;
+    private Set<Integer> completedToday;
+    private Set<Integer> missedToday;
 
-    // Constructor: We pass the list of tasks from the database into this adapter
-    public TaskAdapter(List<Task> taskList) {
-        this.taskList = taskList;
+    public TaskAdapter(ArrayList<Task> taskList) {
+        this.taskList       = taskList;
+        this.completedToday = new HashSet<>();
+        this.missedToday    = new HashSet<>();
     }
 
-    // 1. INFLATE: This method takes our item_task.xml file and turns it into a Java View
     @NonNull
     @Override
     public TaskViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
-        View view = LayoutInflater.from(parent.getContext()).inflate(R.layout.item_task, parent, false);
+        View view = LayoutInflater.from(parent.getContext())
+                .inflate(R.layout.item_task, parent, false);
         return new TaskViewHolder(view);
     }
 
-    // 2. BIND: This method grabs the exact task for the current row, and puts the text into the TextViews
     @Override
     public void onBindViewHolder(@NonNull TaskViewHolder holder, int position) {
         Task currentTask = taskList.get(position);
 
-        // 1. Title
-        holder.titleText.setText(currentTask.title != null ? currentTask.title : "Untitled Task");
-
-
-        // 2. Time (Using our new scheduledTime variable)
-        String timeStr = (currentTask.scheduledTime != null) ? currentTask.scheduledTime : "--:--";
-        holder.timeText.setText("Time: " + timeStr);
-
-        // 3. Priority
-        String priorityStr = (currentTask.priority != null) ? currentTask.priority : "None";
-        holder.priorityText.setText("Priority: " + priorityStr);
-
-        // 4. Set color based on priority (Optional but looks great!)
-        if ("High".equalsIgnoreCase(currentTask.priority)) {
-            holder.priorityText.setTextColor(android.graphics.Color.RED);
+        holder.titleText.setText(currentTask.title);
+        holder.timeText.setText("Time: " + (currentTask.scheduledTime != null ? currentTask.scheduledTime : "--:--"));
+        holder.priorityText.setText("Priority: " + (currentTask.priority != null ? currentTask.priority : "None"));
+        int priorityColor;
+        String p = currentTask.priority != null ? currentTask.priority : "";
+        if (Task.PRIORITY_HIGH.equalsIgnoreCase(p)) {
+            priorityColor = holder.itemView.getContext().getColor(R.color.priority_high);
+        } else if (Task.PRIORITY_MEDIUM.equalsIgnoreCase(p)) {
+            priorityColor = holder.itemView.getContext().getColor(R.color.priority_medium);
+        } else if (Task.PRIORITY_LOW.equalsIgnoreCase(p)) {
+            priorityColor = holder.itemView.getContext().getColor(R.color.priority_low);
         } else {
-            holder.priorityText.setTextColor(android.graphics.Color.GRAY);
+            priorityColor = Color.parseColor("#555555");
+        }
+
+        // ── Determine effective status ────────────────────────────────
+        String effectiveStatus;
+        boolean isRecurring = "Recurring".equalsIgnoreCase(currentTask.status);
+
+        if (isRecurring) {
+            if (completedToday.contains(currentTask.id))   effectiveStatus = "Completed";
+            else if (missedToday.contains(currentTask.id)) effectiveStatus = "Missed";
+            else                                           effectiveStatus = "Pending";
+        } else {
+            effectiveStatus = currentTask.status != null ? currentTask.status : "Pending";
+        }
+
+        // ── Apply rounded drawable background + text colours ──────────
+        switch (effectiveStatus) {
+            case "Completed":
+                holder.itemView.setBackground(
+                        holder.itemView.getContext().getDrawable(R.drawable.bg_task_completed));
+                holder.titleText.setTextColor(android.graphics.Color.parseColor("#1B5E20"));
+                holder.timeText.setTextColor(android.graphics.Color.parseColor("#2E7D32"));
+                holder.priorityText.setTextColor(priorityColor);
+                break;
+
+            case "Missed":
+                holder.itemView.setBackground(
+                        holder.itemView.getContext().getDrawable(R.drawable.bg_task_missed));
+                holder.titleText.setTextColor(android.graphics.Color.parseColor("#B71C1C"));
+                holder.timeText.setTextColor(android.graphics.Color.parseColor("#C62828"));
+                holder.priorityText.setTextColor(priorityColor);
+                break;
+
+            default:
+                holder.itemView.setBackground(
+                        holder.itemView.getContext().getDrawable(R.drawable.bg_task_pending));
+                holder.titleText.setTextColor(android.graphics.Color.parseColor("#1A1A1A"));
+                holder.timeText.setTextColor(android.graphics.Color.parseColor("#555555"));
+                holder.priorityText.setTextColor(priorityColor);
+                break;
         }
     }
 
-    // 3. COUNT: Tells the RecyclerView exactly how many items we have
+
+
     @Override
     public int getItemCount() {
         return taskList.size();
     }
 
-    public void updateList(List<Task> newTasks) {
-        this.taskList = newTasks;
-
-        // 2. Tell the RecyclerView to refresh the UI on the screen
+    public void updateList(List<Task> newTasks, Set<Integer> completedToday, Set<Integer> missedToday) {
+        this.taskList       = newTasks;
+        this.completedToday = completedToday;
+        this.missedToday    = missedToday;
         notifyDataSetChanged();
     }
 
-    // THE VIEWHOLDER: This class "holds" the UI elements so Android doesn't have to keep searching for them
     public static class TaskViewHolder extends RecyclerView.ViewHolder {
         TextView titleText, timeText, priorityText;
 
         public TaskViewHolder(@NonNull View itemView) {
             super(itemView);
-            titleText = itemView.findViewById(R.id.textTaskTitle);
-            timeText = itemView.findViewById(R.id.textTaskTime);
+            titleText    = itemView.findViewById(R.id.textTaskTitle);
+            timeText     = itemView.findViewById(R.id.textTaskTime);
             priorityText = itemView.findViewById(R.id.textTaskPriority);
         }
     }

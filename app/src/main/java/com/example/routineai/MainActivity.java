@@ -6,6 +6,7 @@ import android.os.Bundle;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.widget.Button;
+import android.widget.ImageButton;
 import android.widget.EditText;
 import android.widget.LinearLayout;
 import android.widget.ScrollView;
@@ -66,7 +67,7 @@ public class MainActivity extends AppCompatActivity {
         chatContainer = findViewById(R.id.chatContainer);
         scrollView = findViewById(R.id.scrollView);
         EditText editTextText = findViewById(R.id.editTextText);
-        Button button = findViewById(R.id.button);
+        ImageButton button = findViewById(R.id.button);
 
         // Restore chat history across rotations
         if (savedInstanceState != null) {
@@ -336,6 +337,10 @@ public class MainActivity extends AppCompatActivity {
 
                                     // STEP 1 — Delete tasks the AI removed
                                     for (Task existing : existingTasks) {
+                                        if ("Completed".equalsIgnoreCase(existing.status) ||
+                                                "Missed".equalsIgnoreCase(existing.status)) {
+                                            continue;
+                                        }
                                         if (!incomingTitles.contains(existing.title.toLowerCase().trim())) {
                                             final int oldId = existing.id;
                                             runOnUiThread(() -> {
@@ -360,14 +365,16 @@ public class MainActivity extends AppCompatActivity {
                                         Task existing = existingMap.get(key);
 
                                         if (existing != null) {
-                                            // Task exists — update changed fields + stamp new routine_id
+                                            // ── Task exists — update only changed fields ──
                                             boolean changed = false;
 
-                                            if (!incoming.scheduledTime.equals(existing.scheduledTime)) {
+                                            if (incoming.scheduledTime != null &&
+                                                    !incoming.scheduledTime.equals(existing.scheduledTime)) {
                                                 existing.scheduledTime = incoming.scheduledTime;
                                                 changed = true;
                                             }
-                                            if (!incoming.priority.equals(existing.priority)) {
+                                            if (incoming.priority != null &&
+                                                    !incoming.priority.equals(existing.priority)) {
                                                 existing.priority = incoming.priority;
                                                 changed = true;
                                             }
@@ -375,13 +382,11 @@ public class MainActivity extends AppCompatActivity {
                                                 existing.durationMinutes = incoming.durationMinutes;
                                                 changed = true;
                                             }
-                                            if (!incoming.status.equals(existing.status)) {
+                                            if (incoming.status != null &&
+                                                    !incoming.status.equals(existing.status)) {
                                                 existing.status = incoming.status;
                                                 changed = true;
                                             }
-
-                                            // Always stamp routine_id to track which prompt last touched this task
-
 
                                             if (changed) {
                                                 existing.routine_id = (int) newRoutineId;
@@ -390,13 +395,28 @@ public class MainActivity extends AppCompatActivity {
                                                 runOnUiThread(() -> scheduleTaskAlarm(updated));
                                             }
 
+                                            // Sync Task_Recurrence if recurring status changed
+                                            boolean incomingIsRecurring = "Recurring".equalsIgnoreCase(incoming.status);
+                                            boolean hasRecurrenceRow = dao.getRecurrenceByTaskId(existing.id) != null;
+
+                                            if (incomingIsRecurring && !hasRecurrenceRow) {
+                                                TaskRecurrence recurrence = new TaskRecurrence();
+                                                recurrence.task_id = existing.id;
+                                                recurrence.frequency = "Daily";
+                                                recurrence.counts_towards_score = true;
+                                                dao.insertRecurrence(recurrence);
+                                            } else if (!incomingIsRecurring && hasRecurrenceRow) {
+                                                dao.deleteRecurrenceByTask(existing.id);
+                                            }
+
                                         } else {
-                                            // New task
+                                            // ── Brand-new task — insert everything ──
                                             incoming.routine_id = (int) newRoutineId;
                                             long newTaskId = dao.insertSingleTask(incoming);
                                             incoming.id = (int) newTaskId;
 
-                                            if ("Recurring".equalsIgnoreCase(incoming.status.trim())) {
+                                            // Insert recurrence row if recurring
+                                            if ("Recurring".equalsIgnoreCase(incoming.status != null ? incoming.status.trim() : "")) {
                                                 TaskRecurrence recurrence = new TaskRecurrence();
                                                 recurrence.task_id = incoming.id;
                                                 recurrence.frequency = "Daily";
@@ -404,11 +424,10 @@ public class MainActivity extends AppCompatActivity {
                                                 dao.insertRecurrence(recurrence);
                                             }
 
+                                            // Insert category mappings
                                             if (incoming.categories != null) {
                                                 for (String categoryName : incoming.categories) {
                                                     String normalizedName = categoryName.trim().toLowerCase();
-                                                    // Check first — never attempt INSERT if it already exists
-                                                    // This prevents autoincrement from jumping on ignored inserts
                                                     Long catId = dao.getCategoryIdByName(normalizedName);
 
                                                     if (catId == null) {
@@ -417,7 +436,7 @@ public class MainActivity extends AppCompatActivity {
                                                         catId = dao.insertCategory(cat);
                                                     }
 
-                                                    if (catId != -1) {
+                                                    if (catId != null && catId != -1) {
                                                         TaskCategoryMapping mapping = new TaskCategoryMapping();
                                                         mapping.task_id = incoming.id;
                                                         mapping.category_id = catId.intValue();
@@ -426,8 +445,9 @@ public class MainActivity extends AppCompatActivity {
                                                 }
                                             }
 
-                                            if ("Pending".equalsIgnoreCase(incoming.status.trim()) ||
-                                                    "Recurring".equalsIgnoreCase(incoming.status.trim())) {
+                                            // Insert alarm and schedule it
+                                            if ("Pending".equalsIgnoreCase(incoming.status != null ? incoming.status.trim() : "") ||
+                                                    "Recurring".equalsIgnoreCase(incoming.status != null ? incoming.status.trim() : "")) {
                                                 Alarm dbAlarm = new Alarm();
                                                 dbAlarm.task_id = incoming.id;
                                                 dbAlarm.trigger_time = incoming.scheduledTime;
@@ -439,7 +459,6 @@ public class MainActivity extends AppCompatActivity {
                                             }
                                         }
                                     }
-
                                 } catch (Exception e) {
                                     android.util.Log.e("DB_ERROR", "Selective update failed", e);
                                     runOnUiThread(() -> addChatBubble(
@@ -555,6 +574,36 @@ public class MainActivity extends AppCompatActivity {
             android.util.Log.e("AlarmError", "Failed to schedule: " + task.title, e);
         }
     }
+    private void runDailyResetIfNeeded() {
+        android.content.SharedPreferences prefs =
+                getSharedPreferences("routineai_prefs", MODE_PRIVATE);
+
+        String lastReset = prefs.getString("last_reset_date", "");
+        String today = new java.text.SimpleDateFormat(
+                "yyyy-MM-dd", java.util.Locale.getDefault())
+                .format(new java.util.Date());
+
+        if (today.equals(lastReset)) return; // already reset today
+
+        executor.execute(() -> {
+            AppDatabase db = AppDatabase.getDatabase(this);
+            TaskDao dao = db.taskDao();
+
+            dao.deleteFinishedOneTimeTasks();   // removes Completed/Missed one-time rows
+            dao.resetRecurringTasksForNewDay(); // resets Recurring tasks back to Pending
+
+            // Save today so this doesn't run again until tomorrow
+            prefs.edit().putString("last_reset_date", today).apply();
+
+            android.util.Log.d("DAILY_RESET", "Daily reset ran for " + today);
+        });
+    }
+    @Override
+    protected void onResume() {
+        super.onResume();
+        runDailyResetIfNeeded();
+    }
+
 
 
 }

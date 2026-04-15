@@ -3,34 +3,17 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:orientation="vertical"
-    android:background="#F5F5F5"
-    android:padding="16dp">
+    android:background="#F0F2F5"
+    android:paddingTop="?attr/actionBarSize">
 
-    <!-- Page Header -->
-    <TextView
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:text="Productivity Overview"
-        android:textSize="28sp"
-        android:textStyle="bold"
-        android:textColor="#111111"
-        android:layout_marginBottom="8dp"
-        android:layout_marginTop="16dp"/>
-
-    <TextView
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:text="Your real-time execution stats by category."
-        android:textSize="16sp"
-        android:textColor="#666666"
-        android:layout_marginBottom="24dp"/>
-
-    <!-- Dynamic List for the Meters -->
     <androidx.recyclerview.widget.RecyclerView
         android:id="@+id/recyclerViewProductivity"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:clipToPadding="false"
-        android:paddingBottom="16dp"/>
+        android:paddingTop="12dp"
+        android:paddingBottom="16dp"
+        android:paddingLeft="4dp"
+        android:paddingRight="4dp"/>
 
 </LinearLayout>

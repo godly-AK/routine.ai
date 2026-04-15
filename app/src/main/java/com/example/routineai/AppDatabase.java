@@ -19,7 +19,7 @@ import androidx.sqlite.db.SupportSQLiteDatabase;
         Alarm.class,
         TaskRecurrence.class
 
-}, version = 8, exportSchema = false)
+}, version = 9, exportSchema = false)
 public abstract class AppDatabase extends RoomDatabase {
 
     // Link the DAO we just made

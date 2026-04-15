@@ -1,69 +1,88 @@
 <?xml version="1.0" encoding="utf-8"?>
-<androidx.cardview.widget.CardView xmlns:android="http://schemas.android.com/apk/res/android"
+<androidx.cardview.widget.CardView
+    xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
-    android:layout_margin="8dp"
-    app:cardCornerRadius="12dp"
-    app:cardElevation="4dp">
+    android:layout_marginLeft="12dp"
+    android:layout_marginRight="12dp"
+    android:layout_marginTop="5dp"
+    android:layout_marginBottom="5dp"
+    app:cardCornerRadius="16dp"
+    app:cardElevation="3dp"
+    app:cardBackgroundColor="#FFFFFF">
 
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:orientation="vertical"
-        android:padding="16dp">
+        android:padding="18dp">
 
+        <!-- Category name + percentage on one row -->
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:orientation="horizontal"
-            android:weightSum="1">
+            android:layout_marginBottom="10dp">
 
-            <!-- Category Name -->
             <TextView
                 android:id="@+id/textCategoryName"
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
-                android:layout_weight="0.8"
+                android:layout_weight="1"
                 android:text="Academics"
-                android:textSize="18sp"
-                android:textStyle="bold"
-                android:textColor="#333333"/>
-
-            <!-- Percentage Text -->
-            <TextView
-                android:id="@+id/textPercentage"
-                android:layout_width="0dp"
-                android:layout_height="wrap_content"
-                android:layout_weight="0.2"
-                android:text="80%"
-                android:textAlignment="viewEnd"
                 android:textSize="16sp"
                 android:textStyle="bold"
-                android:textColor="#4CAF50"/>
+                android:textColor="#1A1A1A"/>
+
+            <TextView
+                android:id="@+id/textPercentage"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="80%"
+                android:textSize="16sp"
+                android:textStyle="bold"
+                android:textColor="#2E7D32"/>
+
         </LinearLayout>
 
-        <!-- The Progress Meter -->
+        <!-- Progress bar -->
         <ProgressBar
             android:id="@+id/progressBarCategory"
             style="?android:attr/progressBarStyleHorizontal"
             android:layout_width="match_parent"
-            android:layout_height="12dp"
-            android:layout_marginTop="12dp"
+            android:layout_height="10dp"
             android:max="100"
             android:progress="80"
             android:progressTint="#4CAF50"
-            android:progressBackgroundTint="#E0E0E0"/>
+            android:progressBackgroundTint="#E8E8E8"
+            android:layout_marginBottom="10dp"/>
 
-        <!-- Task Stats (e.g., 4 Completed / 1 Missed) -->
-        <TextView
-            android:id="@+id/textTaskStats"
+        <!-- Stats row -->
+        <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginTop="8dp"
-            android:text="4 Completed • 1 Missed"
-            android:textSize="14sp"
-            android:textColor="#757575"/>
+            android:orientation="horizontal">
+
+            <TextView
+                android:id="@+id/textTaskStats"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:text="4 Completed"
+                android:textSize="12sp"
+                android:textColor="#2E7D32"/>
+
+            <TextView
+                android:id="@+id/textTaskMissed"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="1 Missed"
+                android:textSize="12sp"
+                android:textColor="#C62828"/>
+
+        </LinearLayout>
 
     </LinearLayout>
+
 </androidx.cardview.widget.CardView>

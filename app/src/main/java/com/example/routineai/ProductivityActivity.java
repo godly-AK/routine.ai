@@ -16,6 +16,12 @@ public class ProductivityActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_productivity);
 
+        // Show title and back arrow in the action bar
+        if (getSupportActionBar() != null) {
+            getSupportActionBar().setDisplayHomeAsUpEnabled(true);
+            getSupportActionBar().setTitle("Productivity Score");
+        }
+
         RecyclerView recyclerView = findViewById(R.id.recyclerViewProductivity);
         recyclerView.setLayoutManager(new LinearLayoutManager(this));
 
@@ -33,6 +39,7 @@ public class ProductivityActivity extends AppCompatActivity {
             });
         });
     }
+
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
         if (item.getItemId() == android.R.id.home) {
