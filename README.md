@@ -9,7 +9,7 @@ RoutineAI is an intelligent, adaptive Android application that can guide people 
 * **Decoupled Background Execution:** Manages recurring habits and automated push notifications via native Android `AlarmManager` and `BroadcastReceiver` layers.
 * **Real-Time Analytics:** Calculates dynamic productivity scores and completion rates natively via multi-table SQL aggregations.
 
-## RoutineAI v2: Real Project
+## RoutineAI v2: Real Project(needs to be done)
 * **Kotlin Codebase Migration:** Complete transition of the existing Java architecture to Kotlin, leveraging Coroutines and Flow for modern, asynchronous, and safer development.
 * **Modernized UI & Animations:** A comprehensive visual overhaul featuring fluid screen transitions, state-driven micro-animations, and a highly polished, intuitive user experience.
 * **Standardized Roadmap Orchestration:** Ingest and parse long-term goal templates (e.g., "DSA Sheet") to automatically generate dependency-linked, daily actionable tasks.
