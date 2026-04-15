@@ -1,6 +1,6 @@
 # RoutineAI
 
-RoutineAI is an intelligent, adaptive Android application that bridges stochastic natural language AI with a highly structured local database to automate task execution and long-term goal management. 
+RoutineAI is an intelligent, adaptive Android application that can guide people towards their and help them to achieve it.The idea is to use notification as mean to check and remind the user of daily task that they need to do to achieve their main goal.  
 
 ## RoutineAI v1: DBS mini project
 * **Conversational AI Scheduling:** Converts freeform natural language input into structured task data using Google Gemini 2.5 Flash.
@@ -16,3 +16,4 @@ RoutineAI is an intelligent, adaptive Android application that bridges stochasti
 * **ML-Driven Behavioral Profiling:** Utilize rule-based machine learning (Decision Tree Classifiers) to analyze historical execution logs and categorize the user's unique execution style (e.g., Procrastinator, Sprint Worker).
 * **Adaptive Enforcement Engine:** Dynamically adjust the frequency, timing, and strictness of push notifications in real-time based on the user's active behavioral profile to enforce accountability.
 * **Macro-Milestone Dashboards:** Expand the analytics suite to track overarching long-term roadmap completion percentages alongside the daily micro-productivity metrics.
+### i am really sorry but the above is made by AI
