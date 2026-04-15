@@ -7,4 +7,9 @@
     <color name="teal_700">#FF018786</color>
     <color name="black">#FF000000</color>
     <color name="white">#FFFFFFFF</color>
+
+    <!-- Priority Colors -->
+    <color name="priority_high">#E65100</color>   <!-- Deep Orange (Better contrast than Red) -->
+    <color name="priority_medium">#FB8C00</color> <!-- Medium Orange -->
+    <color name="priority_low">#FBC02D</color>    <!-- Yellow -->
 </resources>

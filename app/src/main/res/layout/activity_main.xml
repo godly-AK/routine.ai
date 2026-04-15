@@ -6,8 +6,8 @@
     android:id="@+id/main"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
+    android:background="#F0F2F5"
     tools:context=".MainActivity">
-
 
     <ScrollView
         android:id="@+id/scrollView"
@@ -18,55 +18,90 @@
         app:layout_constraintTop_toTopOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintBottom_toTopOf="@+id/editTextText">
+        app:layout_constraintBottom_toTopOf="@+id/inputCard">
 
         <LinearLayout
             android:id="@+id/chatContainer"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:orientation="vertical"
-            android:padding="16dp">
+            android:padding="12dp"
+            android:paddingTop="16dp">
 
             <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:background="@drawable/bg_ai_bubble"
                 android:textColor="#000000"
-                android:textSize="16sp"
+                android:textSize="15sp"
                 android:paddingLeft="14dp"
                 android:paddingTop="10dp"
                 android:paddingRight="14dp"
                 android:paddingBottom="10dp"
-                android:layout_marginBottom="16dp"
-                android:text="@string/welcome_give_me_your_daily_plan_and_i_will_schedule_it" />
+                android:layout_marginBottom="8dp"
+                android:text="@string/welcome_give_me_your_daily_plan_and_i_will_schedule_it"/>
 
         </LinearLayout>
     </ScrollView>
 
-
-    <EditText
-        android:id="@+id/editTextText"
+    <!-- Input card pinned to bottom -->
+    <androidx.cardview.widget.CardView
+        android:id="@+id/inputCard"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
-        android:layout_marginStart="16dp"
-        android:layout_marginEnd="8dp"
+        android:layout_marginLeft="12dp"
+        android:layout_marginRight="12dp"
         android:layout_marginBottom="16dp"
-        android:hint="Enter your daily plan..."
-        android:inputType="textMultiLine"
-        android:minLines="1"
-        android:maxLines="5"
+        app:cardCornerRadius="28dp"
+        app:cardElevation="6dp"
+        app:cardBackgroundColor="#FFFFFF"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintEnd_toStartOf="@+id/button" />
+        app:layout_constraintEnd_toEndOf="parent">
 
-    <Button
-        android:id="@+id/button"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_marginEnd="16dp"
-        android:text="Go"
-        app:layout_constraintBottom_toBottomOf="@+id/editTextText"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintTop_toTopOf="@+id/editTextText" />
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:paddingLeft="16dp"
+            android:paddingRight="8dp"
+            android:paddingTop="6dp"
+            android:paddingBottom="6dp"
+            android:gravity="center_vertical">
+
+            <!-- FIX 1: explicit textColor + hint color so text is always visible -->
+            <EditText
+                android:id="@+id/editTextText"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:background="@null"
+                android:hint="Enter your daily plan..."
+                android:textColorHint="#AAAAAA"
+                android:textColor="#1A1A1A"
+                android:textCursorDrawable="@null"
+                android:inputType="textMultiLine"
+                android:minLines="1"
+                android:maxLines="5"
+                android:textSize="15sp"
+                android:paddingTop="10dp"
+                android:paddingBottom="10dp"/>
+
+            <!-- FIX 2: use a circular ImageButton with a send icon instead of text arrow -->
+            <ImageButton
+                android:id="@+id/button"
+                android:layout_width="44dp"
+                android:layout_height="44dp"
+                android:layout_marginLeft="8dp"
+                android:background="@drawable/bg_send_button"
+                android:src="@android:drawable/ic_menu_send"
+                android:scaleType="centerInside"
+                android:padding="10dp"
+                android:contentDescription="Send"
+                app:tint="#FFFFFF" />
+
+        </LinearLayout>
+
+    </androidx.cardview.widget.CardView>
 
 </androidx.constraintlayout.widget.ConstraintLayout>

@@ -60,9 +60,9 @@ public interface TaskDao {
             "FROM Categories c\n" +
             "LEFT JOIN Task_Category_Mapping tcm ON c.category_id = tcm.category_id\n" +
             "LEFT JOIN Tasks t ON tcm.task_id = t.id\n" +
-            "LEFT JOIN Task_Recurrence tr ON tr.task_id = t.id\n" +  // ← join recurrence
+            "INNER JOIN Task_Recurrence tr ON tr.task_id = t.id\n" +
             "LEFT JOIN Execution_Logs el ON el.task_id = t.id\n" +
-            "WHERE tr.counts_towards_score = 1 OR tr.task_id IS NULL\n" + // ← filter here
+            "WHERE tr.counts_towards_score = 1\n" +
             "GROUP BY c.category_id")
     List<CategoryScoreResult> getNormalizedProductivityScores();
     @Query("SELECT * FROM Tasks WHERE status NOT IN ('Completed', 'Missed') ORDER BY scheduled_time ASC")
@@ -79,4 +79,16 @@ public interface TaskDao {
     @Query("SELECT * FROM Execution_Logs " +
             "WHERE date(executed_at) = date('now', 'localtime')")
     List<ExecutionLog> getLogsForToday();
+    // Delete one-time tasks that were completed or missed
+    @Query("DELETE FROM Tasks WHERE status IN ('Completed', 'Missed') " +
+            "AND id NOT IN (SELECT task_id FROM Task_Recurrence)")
+    void deleteFinishedOneTimeTasks();
+
+    // Reset recurring tasks back to Pending for a new day
+    @Query("UPDATE Tasks SET status = 'Pending' " +
+            "WHERE status IN ('Completed', 'Missed') " +
+            "AND id IN (SELECT task_id FROM Task_Recurrence)")
+    void resetRecurringTasksForNewDay();
+    @Query("SELECT * FROM Task_Recurrence WHERE task_id = :taskId LIMIT 1")
+    TaskRecurrence getRecurrenceByTaskId(int taskId);
 }

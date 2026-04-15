@@ -1,5 +1,6 @@
 package com.example.routineai;
 
+import android.graphics.Color;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -38,6 +39,17 @@ public class TaskAdapter extends RecyclerView.Adapter<TaskAdapter.TaskViewHolder
         holder.titleText.setText(currentTask.title);
         holder.timeText.setText("Time: " + (currentTask.scheduledTime != null ? currentTask.scheduledTime : "--:--"));
         holder.priorityText.setText("Priority: " + (currentTask.priority != null ? currentTask.priority : "None"));
+        int priorityColor;
+        String p = currentTask.priority != null ? currentTask.priority : "";
+        if (Task.PRIORITY_HIGH.equalsIgnoreCase(p)) {
+            priorityColor = holder.itemView.getContext().getColor(R.color.priority_high);
+        } else if (Task.PRIORITY_MEDIUM.equalsIgnoreCase(p)) {
+            priorityColor = holder.itemView.getContext().getColor(R.color.priority_medium);
+        } else if (Task.PRIORITY_LOW.equalsIgnoreCase(p)) {
+            priorityColor = holder.itemView.getContext().getColor(R.color.priority_low);
+        } else {
+            priorityColor = Color.parseColor("#555555");
+        }
 
         // ── Determine effective status ────────────────────────────────
         String effectiveStatus;
@@ -58,7 +70,7 @@ public class TaskAdapter extends RecyclerView.Adapter<TaskAdapter.TaskViewHolder
                         holder.itemView.getContext().getDrawable(R.drawable.bg_task_completed));
                 holder.titleText.setTextColor(android.graphics.Color.parseColor("#1B5E20"));
                 holder.timeText.setTextColor(android.graphics.Color.parseColor("#2E7D32"));
-                holder.priorityText.setTextColor(android.graphics.Color.parseColor("#388E3C"));
+                holder.priorityText.setTextColor(priorityColor);
                 break;
 
             case "Missed":
@@ -66,7 +78,7 @@ public class TaskAdapter extends RecyclerView.Adapter<TaskAdapter.TaskViewHolder
                         holder.itemView.getContext().getDrawable(R.drawable.bg_task_missed));
                 holder.titleText.setTextColor(android.graphics.Color.parseColor("#B71C1C"));
                 holder.timeText.setTextColor(android.graphics.Color.parseColor("#C62828"));
-                holder.priorityText.setTextColor(android.graphics.Color.parseColor("#D32F2F"));
+                holder.priorityText.setTextColor(priorityColor);
                 break;
 
             default:
@@ -74,10 +86,12 @@ public class TaskAdapter extends RecyclerView.Adapter<TaskAdapter.TaskViewHolder
                         holder.itemView.getContext().getDrawable(R.drawable.bg_task_pending));
                 holder.titleText.setTextColor(android.graphics.Color.parseColor("#1A1A1A"));
                 holder.timeText.setTextColor(android.graphics.Color.parseColor("#555555"));
-                holder.priorityText.setTextColor(android.graphics.Color.parseColor("#555555"));
+                holder.priorityText.setTextColor(priorityColor);
                 break;
         }
     }
+
+
 
     @Override
     public int getItemCount() {
